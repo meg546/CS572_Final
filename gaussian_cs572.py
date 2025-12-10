@@ -350,10 +350,10 @@ for pid, entry in masked_patients.items():
     seg  = entry["SEG"]
     mask = entry["mask_img"].get_fdata().astype(bool)
 
-    # 1️⃣ Compute bounding box ONCE from brain mask
+    #Compute bounding box ONCE from brain mask
     zmin, zmax, ymin, ymax, xmin, xmax = get_bbox(mask)
 
-    # 2️⃣ Crop everything using SAME bounding box
+    #Crop everything using SAME bounding box
     cropped_mods = {}
     for mod in ["T1", "T1CE", "T2", "FLAIR"]:
         vol = mods[mod]
@@ -369,7 +369,7 @@ for pid, entry in masked_patients.items():
                         ymin:ymax+1,
                         xmin:xmax+1]
 
-    # 3️⃣ Save them
+    #Save them
     cropped_patients[pid] = {
         "masked_modalities": cropped_mods,
         "mask": cropped_mask,
@@ -388,7 +388,7 @@ for pid, entry in cropped_patients.items():
     t1ce  = mods["T1CE"]
     mask  = entry["mask"]     # brain mask in cropped space
 
-    # ----------- SIMPLE ROI (older version) -----------
+    # ----------- SIMPLE ROI -----------
     # 1) Basic condition: include all non-zero FLAIR voxels inside the brain mask
     roi = (flair > 0) & mask
 
@@ -543,7 +543,7 @@ for pid, entry in voxel_data.items():
     seg_flat = seg_vol[roi].astype(int)  # shape (N_voxels,)
 
     if len(seg_flat) != len(gmm_labels):
-        print(f"❌ Length mismatch for {pid}: seg={len(seg_flat)}, gmm={len(gmm_labels)}")
+        print(f"Length mismatch for {pid}: seg={len(seg_flat)}, gmm={len(gmm_labels)}")
         continue
 
     # Map BraTS labels {1,2,4} → {0,1,2}, everything else → -1 (ignore)
@@ -589,13 +589,13 @@ for pid, entry in voxel_data.items():
         print(f"Shape mismatch: pred={len(pred_seg)}, true={len(true_seg)}")
         continue
 
-    # --- Region definitions (tweak if your assignment defines them differently) ---
+    # --- Region definitions ---
 
     # Whole tumor: any non-background tumor label
     true_WT = true_seg > 0
     pred_WT = pred_seg > 0
 
-    # Tumor core: example using labels {0,2} in your remapped scheme
+    # Tumor core
     true_TC = np.isin(true_seg, [0, 2])
     pred_TC = np.isin(pred_seg, [0, 2])
 
